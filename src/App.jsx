@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, Fragment } from 'react'
 import Dither from './Dither'
 import TextCursor from './TextCursor'
 import TargetCursor from './TargetCursor'
+import GradualBlur from './GradualBlur'
 
 /* ───────── inject global styles + Google Fonts ───────── */
 const STYLES = `
@@ -84,12 +85,12 @@ body {
   position:absolute;
   left:50%;
   top:0;
-  width:4px;
+  width:8px;
   height:0;
   background:#9333ea;
-  border:1px solid #e9d5ff;
+  border:2px solid #e9d5ff;
   transform:translateX(-50%);
-  transition:height 1s cubic-bezier(.22,1,.36,1);
+  transition:height 1.5s cubic-bezier(.22,1,.36,1);
 }
 .tl-line.active { height:100%; }
 
@@ -104,10 +105,17 @@ body {
 .tl-item.visible { opacity:1; transform:translateY(0); }
 
 .tl-dot {
-  width:22px;height:22px;
-  background:#9333ea;
-  border:3px solid #e9d5ff;
+  width:32px;height:32px;
+  background:#e9d5ff;
+  border:4px solid #9333ea;
+  box-shadow:4px 4px 0px #0d0010;
   flex-shrink:0;
+  position:relative;
+  z-index:2;
+  transition:transform 0.3s;
+}
+.tl-item:hover .tl-dot {
+  transform:scale(1.15) rotate(10deg);
 }
 
 /* ── countdown cards ── */
@@ -260,33 +268,6 @@ function Hero() {
         />
       </div>
 
-      {/* Dither WebGL Background */}
-      <div style={{
-        position:'absolute',
-        inset:0,
-        zIndex:0,
-      }}>
-        <Dither
-          waveColor={[0.3, 0.05, 0.5]}
-          disableAnimation={false}
-          enableMouseInteraction
-          mouseRadius={0.3}
-          colorNum={9.4}
-          waveAmplitude={0.32}
-          waveFrequency={2.6}
-          waveSpeed={0.05}
-        />
-      </div>
-
-      {/* Dark overlay for readability */}
-      <div style={{
-        position:'absolute',
-        inset:0,
-        background:'linear-gradient(180deg, rgba(13,0,16,.4) 0%, rgba(13,0,16,.7) 100%)',
-        zIndex:1,
-        pointerEvents:'none',
-      }} />
-
       {/* Content */}
       <div style={{ position:'relative', zIndex:2, padding:'2rem' }}>
         <div style={{
@@ -405,8 +386,9 @@ function Timeline() {
   },[])
 
   const items = [
-    { icon:'📅', date:'March 20, 2026', title:'Idea Submission Deadline', desc:'Submit your game concept before midnight.' },
-    { icon:'🏆', date:'March 25, 2026', title:'Final Offline Round', desc:'Build & pitch your game in person.' },
+    { phase:'PHASE 01', icon:'🚀', date:'March 1st, 2026', title:'Registration Opens', desc:'Secure your spot and form your ultimate team.' },
+    { phase:'PHASE 02', icon:'📅', date:'March 20, 2026', title:'Idea Submission Deadline', desc:'Submit your game concept before midnight.' },
+    { phase:'PHASE 03', icon:'🏆', date:'March 25, 2026', title:'Final Offline Round', desc:'Build & pitch your game in person to the judges.' },
   ]
 
   return (
@@ -419,10 +401,27 @@ function Timeline() {
             <div key={i} className={`tl-item ${active?'visible':''}`} style={{
               flexDirection: i%2===0?'row':'row-reverse',
               textAlign: i%2===0?'left':'right',
-              transitionDelay:`${.3+i*.35}s`,
+              transitionDelay:`${.3+i*.3}s`,
             }}>
-              <div className="nb-card cursor-target" style={{ flex:1, textAlign: i%2===0?'left':'right' }}>
+              <div className="nb-card cursor-target" style={{ flex:1, textAlign: i%2===0?'left':'right', position:'relative' }}>
                 <span style={{ fontSize:'1.8rem' }}>{it.icon}</span>
+                
+                <div style={{
+                  position: 'absolute',
+                  top: '-15px',
+                  [i%2===0 ? 'right' : 'left']: '-15px',
+                  background: '#9333ea',
+                  color: '#e9d5ff',
+                  border: '2px solid #e9d5ff',
+                  boxShadow: '4px 4px 0px #0d0010',
+                  padding: '4px 8px',
+                  fontFamily: "'JetBrains Mono',monospace",
+                  fontSize: '0.7rem',
+                  fontWeight: 'bold',
+                }}>
+                  {it.phase}
+                </div>
+
                 <div style={{
                   fontFamily:"'JetBrains Mono',monospace",
                   fontSize:'.8rem',
@@ -576,6 +575,34 @@ export default function App() {
         parallaxOn
         hoverDuration={0.2}
       />
+
+      {/* Dither WebGL Background over whole page */}
+      <div style={{
+        position:'fixed',
+        inset:0,
+        zIndex:-2,
+      }}>
+        <Dither
+          waveColor={[0.3, 0.05, 0.5]}
+          disableAnimation={false}
+          enableMouseInteraction
+          mouseRadius={0.3}
+          colorNum={9.4}
+          waveAmplitude={0.32}
+          waveFrequency={2.6}
+          waveSpeed={0.05}
+        />
+      </div>
+
+      {/* Dark overlay for readability */}
+      <div style={{
+        position:'fixed',
+        inset:0,
+        background:'linear-gradient(180deg, rgba(13,0,16,.4) 0%, rgba(13,0,16,.85) 100%)',
+        zIndex:-1,
+        pointerEvents:'none',
+      }} />
+
       <Hero />
       <MarqueeDivider />
       <About />
@@ -586,6 +613,17 @@ export default function App() {
       <hr className="section-divider" />
       <HowItWorks />
       <Footer />
+
+      <GradualBlur
+        target="page"
+        position="bottom"
+        height="10rem"
+        strength={2.5}
+        divCount={6}
+        curve="bezier"
+        exponential
+        opacity={1}
+      />
     </>
   )
 }
