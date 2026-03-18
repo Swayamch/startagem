@@ -106,7 +106,7 @@ body {
 
 .tl-dot {
   width:32px;height:32px;
-  background:#e9d5ff;
+  background:#1a0a2e;
   border:4px solid #9333ea;
   box-shadow:4px 4px 0px #0d0010;
   flex-shrink:0;
@@ -265,6 +265,11 @@ body {
     padding: 1rem;
   }
   .cd-val { font-size: 2.2rem; }
+
+  .arrow-connector {
+    transform: rotate(90deg);
+    margin: 0.5rem 0;
+  }
 }
 `
 
